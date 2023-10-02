@@ -4,10 +4,14 @@ const PORT = 4000;
 const cors = require('cors');
 const { default: mongoose } = require('mongoose');
 const { UserModel } = require('./models/User');
+const Post = require('./models/Post');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const { info } = require('console');
+const multer = require('multer');
+const uploadMiddleware = multer({ dest: 'uploads/' });
+const fs = require('fs');
 
 const salt = bcrypt.genSaltSync(10);
 const secret = bcrypt.genSaltSync(10);
@@ -75,6 +79,38 @@ app.post('/logout', (req, res) => {
   res.clearCookie('token').json({ message: "Logged out" });
 });
 
+app.post('/post', uploadMiddleware.single('files'), async (req, res) => {
+  const {originalname, path} = req.file;
+ 
+  // parts is an array that has two sections. one after the dot (.) and the other after the dot (.) therefore the extension of the file.
+  const parts = originalname.split('.');
+  const ext = parts[parts.length - 1];
+  const newPath = path+'.'+ext;
+  fs.renameSync(path, newPath);
+  
+  // grabes user credentials
+  const {token} = req.cookies;
+  jwt.verify(token, secret, {}, async (err, info) => {
+    if (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    const {title, summary, content} = req.body;
+    const postDoc = await Post.create({
+      title,
+      summary,
+      content,
+      cover: newPath,
+      author:info.id,
+    });
+  res.json(postDoc);
+  });
+
+
+});
+
+app.get('/post', async (req, res) => {
+  res.json(await Post.find().populate('author', ['username']));
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
