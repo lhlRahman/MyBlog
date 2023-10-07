@@ -80,7 +80,7 @@ app.post('/logout', (req, res) => {
   res.clearCookie('token').json({ message: "Logged out" });
 });
 
-app.post('/post', uploadMiddleware.single('files'), async (req, res) => {
+app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
   const {originalname, path} = req.file;
  
   // parts is an array that has two sections. one after the dot (.) and the other after the dot (.) therefore the extension of the file.
@@ -109,6 +109,37 @@ app.post('/post', uploadMiddleware.single('files'), async (req, res) => {
 
 });
 
+app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
+  let newPath = null;
+  if (req.file) {
+    const {originalname, path} = req.file;
+    const parts = originalname.split('.');
+    const ext = parts[parts.length - 1];
+    const newPath = path+'.'+ext;
+    fs.renameSync(path, newPath);
+  }
+  const {token} = req.cookies;
+  jwt.verify(token, secret, {}, async (err, info) => {
+    if (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    const {id, title, summary, content} = req.body;
+    const postDoc = await Post.findById(id)
+    const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
+    if (!isAuthor) {
+      return res.status(400).json('You are not the author');
+    }
+    postDoc.title = title;
+    postDoc.summary = summary; 
+    postDoc.content = content;
+    postDoc.cover = newPath ? newPath : postDoc.cover;
+    
+    await postDoc.save();
+    res.json(postDoc);
+  });
+
+});
+
 app.get('/post', async (req, res) => {
   res.json(
     await Post.find()
@@ -118,6 +149,15 @@ app.get('/post', async (req, res) => {
   );
 });
 
+app.get('/post/:id', async (req, res) => {
+  const {id} = req.params;
+  const postDoc = await Post.findById(id).populate("author", ['username']);
+  res.json(postDoc);
+})
+
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`);
 });
+
+// 3:24:40 / 3:32:09
+// Edit post page
