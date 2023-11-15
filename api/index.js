@@ -1,54 +1,46 @@
 const express = require('express');
-const app = express();
-const PORT = 4000;
 const cors = require('cors');
-const { default: mongoose } = require('mongoose');
-const { UserModel } = require('./models/User');
+const mongoose = require("mongoose");
+const User = require('./models/User');
 const Post = require('./models/Post');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+const app = express();
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-const { info } = require('console');
 const multer = require('multer');
 const uploadMiddleware = multer({ dest: 'uploads/' });
 const fs = require('fs');
 
 const salt = bcrypt.genSaltSync(10);
-const secret = bcrypt.genSaltSync(10);
+const secret = 'asdfe45we45w345wegw345werjktjwertkj';
 
 app.use(cors({credentials:true,origin:'http://localhost:3000'}));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-mongoose.connect(`mongodb+srv://lhlrahman:15D8Ca0e2FaUi3Qa@cluster0.jgpiirq.mongodb.net/`);
+mongoose.connect('mongodb+srv://habibrahman:Ganggangontop.99@cluster0.nidzl9v.mongodb.net/?retryWrites=true&w=majority');
 
-app.post('/register', async (req, res) => {
-  const {username, password} = req.body;
-  try {
-    const userDoc = await UserModel.create({
-      username, 
-      password: bcrypt.hashSync(password, salt)
+app.post('/register', async (req,res) => {
+  const {username,password} = req.body;
+  try{
+    const userDoc = await User.create({
+      username,
+      password:bcrypt.hashSync(password,salt),
     });
     res.json(userDoc);
-    return;
-  } catch (error) {
-    res.status(400).json({error: "Failed to register"});
+  } catch(e) {
+    console.log(e);
+    res.status(400).json(e);
   }
 });
 
 app.post('/login', async (req,res) => {
   const {username,password} = req.body;
-  const userDoc = await UserModel.findOne({username});
-  
-  if (!userDoc) {
-    return res.status(400).json('wrong credentials');
-  }
-  
+  const userDoc = await User.findOne({username});
   const passOk = bcrypt.compareSync(password, userDoc.password);
   if (passOk) {
     // logged in
-    console.log('logged in');
     jwt.sign({username,id:userDoc._id}, secret, {}, (err,token) => {
       if (err) throw err;
       res.cookie('token', token).json({
@@ -61,86 +53,73 @@ app.post('/login', async (req,res) => {
   }
 });
 
-app.get('/profile', async (req, res) => {
+app.get('/profile', (req,res) => {
   const {token} = req.cookies;
-  
-  if (!token) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-
-  jwt.verify(token, secret, (err, info) => {
-    if (err) {
-      return res.status(401).json({ error: "Invalid token" });
-    }
+  jwt.verify(token, secret, {}, (err,info) => {
+    if (err) throw err;
     res.json(info);
   });
 });
 
-app.post('/logout', (req, res) => {
-  res.clearCookie('token').json({ message: "Logged out" });
+app.post('/logout', (req,res) => {
+  res.cookie('token', '').json('ok');
 });
 
-app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
-  const {originalname, path} = req.file;
- 
-  // parts is an array that has two sections. one after the dot (.) and the other after the dot (.) therefore the extension of the file.
+app.post('/post', uploadMiddleware.single('file'), async (req,res) => {
+  const {originalname,path} = req.file;
   const parts = originalname.split('.');
   const ext = parts[parts.length - 1];
   const newPath = path+'.'+ext;
   fs.renameSync(path, newPath);
-  
-  // grabes user credentials
+
   const {token} = req.cookies;
-  jwt.verify(token, secret, {}, async (err, info) => {
-    if (err) {
-      return res.status(401).json({ error: "Invalid token" });
-    }
-    const {title, summary, content} = req.body;
+  jwt.verify(token, secret, {}, async (err,info) => {
+    if (err) throw err;
+    const {title,summary,content} = req.body;
     const postDoc = await Post.create({
       title,
       summary,
       content,
-      cover: newPath,
+      cover:newPath,
       author:info.id,
     });
-  res.json(postDoc);
-  });
-
-
-});
-
-app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
-  let newPath = null;
-  if (req.file) {
-    const {originalname, path} = req.file;
-    const parts = originalname.split('.');
-    const ext = parts[parts.length - 1];
-    const newPath = path+'.'+ext;
-    fs.renameSync(path, newPath);
-  }
-  const {token} = req.cookies;
-  jwt.verify(token, secret, {}, async (err, info) => {
-    if (err) {
-      return res.status(401).json({ error: "Invalid token" });
-    }
-    const {id, title, summary, content} = req.body;
-    const postDoc = await Post.findById(id)
-    const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
-    if (!isAuthor) {
-      return res.status(400).json('You are not the author');
-    }
-    postDoc.title = title;
-    postDoc.summary = summary; 
-    postDoc.content = content;
-    postDoc.cover = newPath ? newPath : postDoc.cover;
-    
-    await postDoc.save();
     res.json(postDoc);
   });
 
 });
 
-app.get('/post', async (req, res) => {
+app.put('/post',uploadMiddleware.single('file'), async (req,res) => {
+  let newPath = null;
+  if (req.file) {
+    const {originalname,path} = req.file;
+    const parts = originalname.split('.');
+    const ext = parts[parts.length - 1];
+    newPath = path+'.'+ext;
+    fs.renameSync(path, newPath);
+  }
+
+  const {token} = req.cookies;
+  jwt.verify(token, secret, {}, async (err,info) => {
+    if (err) throw err;
+    const {id,title,summary,content} = req.body;
+    const postDoc = await Post.findById(id);
+    const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
+    if (!isAuthor) {
+      return res.status(400).json('you are not the author');
+    }
+    await postDoc.update({
+      title,
+      summary,
+      content,
+      cover: newPath ? newPath : postDoc.cover,
+    });
+
+    res.json(postDoc);
+  });
+
+});
+
+app.get('/post', async (req,res) => {
   res.json(
     await Post.find()
       .populate('author', ['username'])
@@ -151,13 +130,8 @@ app.get('/post', async (req, res) => {
 
 app.get('/post/:id', async (req, res) => {
   const {id} = req.params;
-  const postDoc = await Post.findById(id).populate("author", ['username']);
+  const postDoc = await Post.findById(id).populate('author', ['username']);
   res.json(postDoc);
 })
 
-app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`);
-});
-
-// 3:24:40 / 3:32:09
-// Edit post page
+app.listen(4000);
