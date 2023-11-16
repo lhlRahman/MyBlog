@@ -16,7 +16,7 @@ const salt = bcrypt.genSaltSync(10);
 const secret = 'asdfe45we45w345wegw345werjktjwertkj';
 
 app.use(cors({
-  origin: ["https://habibs-blog-gy3x18dq6-habib-rahmans-projects.vercel.app/", "http://localhost:3000"],
+  origin: ["https://habibs-blog.vercel.app/", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT"],
   credentials: true,
 }));
