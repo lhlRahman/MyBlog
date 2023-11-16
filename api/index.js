@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require("mongoose");
-const User = require('./models/User');
-const Post = require('./models/Post');
+const { User } = require('./models/User');
+const { Post } = require('./models/Post');
 const bcrypt = require('bcryptjs');
 const app = express();
 const jwt = require('jsonwebtoken');
@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const uploadMiddleware = multer({ dest: 'uploads/' });
 const fs = require('fs');
+require('dotenv').config();
 
 const salt = bcrypt.genSaltSync(10);
 const secret = 'asdfe45we45w345wegw345werjktjwertkj';
@@ -19,7 +20,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-mongoose.connect('mongodb+srv://habibrahman:Ganggangontop.99@cluster0.nidzl9v.mongodb.net/?retryWrites=true&w=majority');
+mongoose.connect(process.env.MONGODB_URI);
 
 app.post('/register', async (req,res) => {
   const {username,password} = req.body;
@@ -34,7 +35,6 @@ app.post('/register', async (req,res) => {
     res.status(400).json(e);
   }
 });
-
 app.post('/login', async (req,res) => {
   const {username,password} = req.body;
   const userDoc = await User.findOne({username});
@@ -103,16 +103,24 @@ app.put('/post',uploadMiddleware.single('file'), async (req,res) => {
     if (err) throw err;
     const {id,title,summary,content} = req.body;
     const postDoc = await Post.findById(id);
+
+    if (!postDoc) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
     const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
     if (!isAuthor) {
       return res.status(400).json('you are not the author');
     }
-    await postDoc.update({
-      title,
-      summary,
-      content,
-      cover: newPath ? newPath : postDoc.cover,
-    });
+
+postDoc.title = title;
+postDoc.summary = summary;
+postDoc.content = content;
+postDoc.cover = newPath ? newPath : postDoc.cover;
+
+// Save the updated document
+await postDoc.save();
+
 
     res.json(postDoc);
   });
@@ -134,4 +142,6 @@ app.get('/post/:id', async (req, res) => {
   res.json(postDoc);
 })
 
-app.listen(4000);
+app.listen(4000 , () => {
+  console.log('server started');
+});
