@@ -20,7 +20,7 @@ export default function CreatePost() {
     data.set("content", content);
     data.set("file", file[0]);
 
-    const response = await fetch("http://localhost:4000/post", {
+    const response = await fetch("https://habibs-blog.vercel.app/post", {
       method: "POST",
       body: data,
       credentials: "include",
