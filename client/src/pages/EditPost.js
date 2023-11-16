@@ -7,7 +7,7 @@ export default function EditPost() {
   const [title,setTitle] = useState('');
   const [summary,setSummary] = useState('');
   const [content,setContent] = useState('');
-  const [files, setFiles] = useState('');
+  const [file, setFiles] = useState('');
   const [redirect,setRedirect] = useState(false);
 
   useEffect(() => {
@@ -28,8 +28,8 @@ export default function EditPost() {
     data.set('summary', summary);
     data.set('content', content);
     data.set('id', id);
-    if (files?.[0]) {
-      data.set('file', files?.[0]);
+    if (file?.[0]) {
+      data.set('file', file?.[0]);
     }
     const response = await fetch('http://localhost:4000/post', {
       method: 'PUT',
@@ -56,7 +56,7 @@ export default function EditPost() {
              value={summary}
              onChange={ev => setSummary(ev.target.value)} />
       <input type="file"
-             onChange={ev => setFiles(ev.target.files)} />
+             onChange={ev => setFiles(ev.target.file)} />
       <Editor onChange={setContent} value={content} />
       <button style={{marginTop:'5px'}}>Update post</button>
     </form>
