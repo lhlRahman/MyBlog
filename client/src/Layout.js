@@ -1,8 +1,7 @@
-import Header from "./Header"
+import Header from "./pages/Header";
 import {Outlet} from "react-router-dom";
 
 export default function Layout() {
-  console.log("we in jhere")
   return (
     <main>
       <Header />
