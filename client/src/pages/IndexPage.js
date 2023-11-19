@@ -6,7 +6,7 @@ export default function IndexPage() {
   const [error, setError] = useState(null); // State to store error messages
 
   useEffect(() => {
-    fetch('http://159.203.29.162:4000/post')
+    fetch('https://backend-z489.onrender.com/post')
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch posts'); // Throw an error if response is not ok

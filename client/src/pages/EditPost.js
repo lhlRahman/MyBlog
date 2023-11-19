@@ -44,7 +44,7 @@ export default function EditPost() {
     }
 
     try {
-      const response = await fetch('http://159.203.29.162:4000/post', {
+      const response = await fetch('https://backend-z489.onrender.com/post', {
         method: 'PUT',
         body: data,
         credentials: 'include',

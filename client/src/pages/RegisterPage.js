@@ -11,7 +11,7 @@ export default function RegisterPage() {
     setError(null); // Reset error on new submission
 
     try {
-      const response = await fetch('http://159.203.29.162:4000/register', {
+      const response = await fetch('https://backend-z489.onrender.com/register', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
         headers: { 'Content-Type': 'application/json' },

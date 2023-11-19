@@ -24,7 +24,7 @@ export default function CreatePost() {
     }
 
     try {
-      const response = await fetch("http://159.203.29.162:4000/post", {
+      const response = await fetch("https://backend-z489.onrender.com/post", {
         method: "POST",
         body: data,
         credentials: "include",
