@@ -9,26 +9,34 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const uploadMiddleware = multer({ dest: 'uploads/' });
-const fs = require('fs').promises; // Use promises version of fs for better error handling
+const fs = require('fs').promises;
 require('dotenv').config();
 
 const salt = bcrypt.genSaltSync(10);
 const secret = process.env.SECRET_KEY;
+console.log(secret);
 
-app.use(cors({credentials: true, origin: 'https://habibs-blog.vercel.app/'}));
+// Enable CORS for the specified origin
+app.use(cors({credentials: true, origin: 'https://habibs-blog.vercel.app'}));
+
+// Parse JSON request bodies
 app.use(express.json());
+
+// Parse cookies
 app.use(cookieParser());
+
+// Serve static files from the '/uploads' directory
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-// MongoDB connection with improved error handling
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => {
     console.error('MongoDB connection error:', err);
-    process.exit(1); // Exit if unable to connect to MongoDB
+    process.exit(1);
   });
 
-// Middleware for handling invalid JSON payloads
+// Middleware to handle SyntaxError for invalid JSON payloads
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).send({ message: 'Invalid JSON payload' });
@@ -36,7 +44,17 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Register endpoint with error handling
+// Function to verify JWT token
+function verifyToken(token) {
+  try {
+    return jwt.verify(token, secret);
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
+// Register endpoint
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -51,7 +69,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login endpoint with error handling
+// Login endpoint
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -80,16 +98,14 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Profile endpoint with error handling
+// Profile endpoint
 app.get('/profile', (req, res) => {
   const { token } = req.cookies;
-  jwt.verify(token, secret, {}, (err, info) => {
-    if (err) {
-      console.error(err);
-      return res.status(400).json({ message: 'Invalid token' });
-    }
-    res.json(info);
-  });
+  const userInfo = verifyToken(token);
+  if (!userInfo) {
+    return res.status(400).json({ message: 'Invalid token' });
+  }
+  res.json(userInfo);
 });
 
 // Logout endpoint
@@ -97,119 +113,100 @@ app.post('/logout', (req, res) => {
   res.cookie('token', '').json('ok');
 });
 
-// Post creation endpoint with error handling
+// Create post endpoint
 app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
-  try {
+  const { token } = req.cookies;
+  const userInfo = verifyToken(token);
+  if (!userInfo) {
+    return res.status(400).json({ message: 'Invalid token' });
+  }
+  const { originalname, path } = req.file;
+  const parts = originalname.split('.');
+  const ext = parts[parts.length - 1];
+  const newPath = path + '.' + ext;
+  await fs.rename(path, newPath);
+
+  const { title, summary, content } = req.body;
+  const postDoc = await Post.create({
+    title,
+    summary,
+    content,
+    cover: newPath,
+    author: userInfo.id,
+  });
+  res.json(postDoc);
+});
+
+// Update post endpoint
+app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
+  const { token } = req.cookies;
+  const userInfo = verifyToken(token);
+  if (!userInfo) {
+    return res.status(400).json({ message: 'Invalid token' });
+  }
+  let newPath = null;
+  if (req.file) {
     const { originalname, path } = req.file;
     const parts = originalname.split('.');
     const ext = parts[parts.length - 1];
-    const newPath = path + '.' + ext;
+    newPath = path + '.' + ext;
     await fs.rename(path, newPath);
-
-    const { token } = req.cookies;
-    jwt.verify(token, secret, {}, async (err, info) => {
-      if (err) {
-        console.error(err);
-        return res.status(400).json({ message: 'Invalid token' });
-      }
-      const { title, summary, content } = req.body;
-      const postDoc = await Post.create({
-        title,
-        summary,
-        content,
-        cover: newPath,
-        author: info.id,
-      });
-      res.json(postDoc);
-    });
-  } catch (e) {
-    console.error(e);
-    res.status(400).json({ message: e.message });
   }
+
+  const { id, title, summary, content } = req.body;
+  const postDoc = await Post.findById(id);
+
+  if (!postDoc) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+
+  const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(userInfo.id);
+  if (!isAuthor) {
+    return res.status(403).json({ message: 'You are not the author' });
+  }
+
+  postDoc.title = title;
+  postDoc.summary = summary;
+  postDoc.content = content;
+  postDoc.cover = newPath || postDoc.cover;
+
+  await postDoc.save();
+  res.json(postDoc);
 });
 
-// Post update endpoint with error handling
-app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
-  try {
-    let newPath = null;
-    if (req.file) {
-      const { originalname, path } = req.file;
-      const parts = originalname.split('.');
-      const ext = parts[parts.length - 1];
-      newPath = path + '.' + ext;
-      await fs.rename(path, newPath);
-    }
-
-    const { token } = req.cookies;
-    jwt.verify(token, secret, {}, async (err, info) => {
-      if (err) {
-        console.error(err);
-        return res.status(400).json({ message: 'Invalid token' });
-      }
-      const { id, title, summary, content } = req.body;
-      const postDoc = await Post.findById(id);
-
-      if (!postDoc) {
-        return res.status(404).json({ message: 'Post not found' });
-      }
-
-      const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
-      if (!isAuthor) {
-        return res.status(403).json({ message: 'You are not the author' });
-      }
-
-      postDoc.title = title;
-      postDoc.summary = summary;
-      postDoc.content = content;
-      postDoc.cover = newPath || postDoc.cover;
-
-      await postDoc.save();
-      res.json(postDoc);
-    });
-  } catch (e) {
-    console.error(e);
-    res.status(400).json({ message: e.message });
-  }
-});
-
-// Fetch posts endpoint with error handling
+// Get all posts endpoint
 app.get('/post', async (req, res) => {
-  try {
-    res.json(
-      await Post.find()
-        .populate('author', ['username'])
-        .sort({ createdAt: -1 })
-        .limit(20)
-    );
-  } catch (e) {
-    console.error(e);
-    res.status(400).json({ message: e.message });
-  }
+  res.json(
+    await Post.find()
+      .populate('author', ['username'])
+      .sort({ createdAt: -1 })
+      .limit(20)
+  );
 });
 
-// Fetch a single post endpoint with error handling
+// Get single post endpoint
 app.get('/post/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const postDoc = await Post.findById(id).populate('author', ['username']);
-    if (!postDoc) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
-    res.json(postDoc);
-  } catch (e) {
-    console.error(e);
-    res.status(400).json({ message: e.message });
+  const { token } = req.cookies;
+  const userInfo = verifyToken(token);
+  if (!userInfo) {
+    return res.status(400).json({ message: 'Invalid token' });
   }
+  const { id } = req.params;
+  const postDoc = await Post.findById(id).populate('author', ['username']);
+  if (!postDoc) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+  res.json(postDoc);
 });
 
-// General error handling middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).send({ message: 'Internal Server Error' });
 });
 
+// Start the server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
-
