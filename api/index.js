@@ -13,7 +13,7 @@ const fs = require('fs').promises; // Use promises version of fs for better erro
 require('dotenv').config();
 
 const salt = bcrypt.genSaltSync(10);
-const secret = 'asdfe45we45w345wegw345werjktjwertkj';
+const secret = process.env.SECRET_KEY;
 
 app.use(cors({credentials: true, origin: 'https://habibsblogbackend.onrender.com'}));
 app.use(express.json());
@@ -208,6 +208,8 @@ app.use((err, req, res, next) => {
   res.status(500).send({ message: 'Internal Server Error' });
 });
 
-app.listen(4000, () => {
-  console.log('Server started on port 4000');
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
 });
+

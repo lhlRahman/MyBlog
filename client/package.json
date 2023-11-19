@@ -40,6 +40,13 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-transform-private-methods": "^latest",
+    "@babel/plugin-transform-numeric-separator": "^latest",
+    "@babel/plugin-transform-class-properties": "^latest",
+    "@babel/plugin-transform-nullish-coalescing-operator": "^latest",
+    "@babel/plugin-transform-optional-chaining": "^latest",
+    "@babel/plugin-transform-private-property-in-object": "^latest",
+    "@rollup/plugin-terser": "^latest",
+    "@jridgewell/sourcemap-codec": "^latest"
   }
 }
