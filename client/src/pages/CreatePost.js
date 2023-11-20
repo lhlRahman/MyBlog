@@ -24,7 +24,7 @@ export default function CreatePost() {
     }
     console.log("data", data);
     try {
-      const response = await fetch("https://backend-z489.onrender.com/post", {
+      const response = await fetch("https://habibs-blog-api.azurewebsites.net/post", {
         method: "POST",
         body: data,
         credentials: "include",

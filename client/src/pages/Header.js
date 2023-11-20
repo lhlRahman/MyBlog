@@ -5,7 +5,7 @@ import {UserContext} from "../UserContext";
 export default function Header() {
   const {setUserInfo,userInfo} = useContext(UserContext);
   useEffect(() => {
-    fetch('https://backend-z489.onrender.com/profile', {
+    fetch('https://habibs-blog-api.azurewebsites.net/profile', {
       credentials: 'include',
     }).then(response => {
       response.json().then(userInfo => {
@@ -15,7 +15,7 @@ export default function Header() {
   }, [setUserInfo]);
 
   function logout() {
-    fetch('https://backend-z489.onrender.com/logout', {
+    fetch('https://habibs-blog-api.azurewebsites.net/logout', {
       credentials: 'include',
       method: 'POST',
     });

@@ -12,7 +12,7 @@ export default function EditPost() {
   const [error, setError] = useState(null); // New state for error handling
 
   useEffect(() => {
-    fetch('http://localhost:4000/post/' + id)
+    fetch('https://habibs-blog-api.azurewebsites.net/' + id)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch post');
@@ -44,7 +44,7 @@ export default function EditPost() {
     }
 
     try {
-      const response = await fetch('https://backend-z489.onrender.com/post', {
+      const response = await fetch('https://habibs-blog-api.azurewebsites.net/post', {
         method: 'PUT',
         body: data,
         credentials: 'include',

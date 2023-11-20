@@ -7,7 +7,7 @@ export default function Post({_id,title,summary,cover,content,createdAt,author})
     <div className="post">
       <div className="image">
         <Link to={`/post/${_id}`}>
-          <img src={'https://backend-z489.onrender.com/'+cover} alt=""/>
+          <img src={'https://habibs-blog-api.azurewebsites.net/'+cover} alt=""/>
         </Link>
       </div>
       <div className="texts">

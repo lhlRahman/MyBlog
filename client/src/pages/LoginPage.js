@@ -14,7 +14,7 @@ export default function LoginPage() {
     setError(null); // Reset error on new submission
 
     try {
-      const response = await fetch('https://backend-z489.onrender.com/login', {
+      const response = await fetch('https://habibs-blog-api.azurewebsites.net/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
         headers: { 'Content-Type': 'application/json' },
