@@ -33,7 +33,8 @@ app.use(cors({
     'https://habibs-blog.vercel.app',
     'http://habibs-blog.vercel.app',
     'https://whoishabib.wiki',
-    'http://whoishabib.wiki'
+    'http://whoishabib.wiki',
+    'http://localhost:3000'
   ]
 }));
 
