@@ -17,7 +17,7 @@ const secret = process.env.SECRET_KEY;
 console.log(secret);
 
 // Enable CORS for the specified origin
-app.use(cors({credentials: true, origin: 'https://habibs-blog.vercel.app'}));
+app.use(cors({credentials: true, origin: ['https://habibs-blog.vercel.app','https://whoishabib.wiki']}));
 
 // Parse JSON request bodies
 app.use(express.json());
