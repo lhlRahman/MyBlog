@@ -22,7 +22,7 @@ export default function CreatePost() {
     if (file && file.length > 0) {
       data.set("file", file[0]);
     }
-
+    console.log("data", data);
     try {
       const response = await fetch("https://backend-z489.onrender.com/post", {
         method: "POST",
