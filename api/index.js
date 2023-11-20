@@ -8,16 +8,34 @@ const app = express();
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
-const uploadMiddleware = multer({ dest: 'uploads/' });
+const uploadMiddleware = multer({ storage: storage });
 const fs = require('fs').promises;
 require('dotenv').config();
 
 const salt = bcrypt.genSaltSync(10);
 const secret = process.env.SECRET_KEY;
-console.log(secret);
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + path.basename(file.originalname));
+  }
+});
+
 
 // Enable CORS for the specified origin
-app.use(cors({credentials: true, origin: ['https://habibs-blog.vercel.app','https://whoishabib.wiki']}));
+app.use(cors({
+  credentials: true,
+  origin: [
+    'https://habibs-blog.vercel.app',
+    'http://habibs-blog.vercel.app',
+    'https://whoishabib.wiki',
+    'http://whoishabib.wiki'
+  ]
+}));
+
 
 // Parse JSON request bodies
 app.use(express.json());
@@ -46,6 +64,9 @@ app.use((err, req, res, next) => {
 
 // Function to verify JWT token
 function verifyToken(token) {
+  if (!token) {
+    return null;
+  }
   try {
     return jwt.verify(token, secret);
   } catch (err) {
@@ -53,6 +74,7 @@ function verifyToken(token) {
     return null;
   }
 }
+
 
 // Register endpoint
 app.post('/register', async (req, res) => {
