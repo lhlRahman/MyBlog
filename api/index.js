@@ -8,7 +8,6 @@ const app = express();
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
-const uploadMiddleware = multer({ storage: storage });
 const fs = require('fs').promises;
 require('dotenv').config();
 
@@ -24,6 +23,7 @@ const storage = multer.diskStorage({
   }
 });
 
+const uploadMiddleware = multer({ storage: storage });
 
 // Enable CORS for the specified origin
 app.use(cors({
