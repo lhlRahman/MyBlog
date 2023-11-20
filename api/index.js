@@ -10,6 +10,8 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const fs = require('fs').promises;
 require('dotenv').config();
+const path = require('path'); 
+
 
 const salt = bcrypt.genSaltSync(10);
 const secret = process.env.SECRET_KEY;
