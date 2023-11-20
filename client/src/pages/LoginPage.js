@@ -14,7 +14,7 @@ export default function LoginPage() {
     setError(null); // Reset error on new submission
 
     try {
-      const response = await fetch('https://habibs-blog-api.azurewebsites.net/login', {
+      const response = await fetch('http://20.121.128.76/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
         headers: { 'Content-Type': 'application/json' },

@@ -5,7 +5,7 @@ import {UserContext} from "../UserContext";
 export default function Header() {
   const {setUserInfo,userInfo} = useContext(UserContext);
   useEffect(() => {
-    fetch('https://habibs-blog-api.azurewebsites.net/profile', {
+    fetch('http://20.121.128.76/profile', {
       credentials: 'include',
     }).then(response => {
       response.json().then(userInfo => {
@@ -15,7 +15,7 @@ export default function Header() {
   }, [setUserInfo]);
 
   function logout() {
-    fetch('https://habibs-blog-api.azurewebsites.net/logout', {
+    fetch('http://20.121.128.76/logout', {
       credentials: 'include',
       method: 'POST',
     });

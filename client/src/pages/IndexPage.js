@@ -6,7 +6,7 @@ export default function IndexPage() {
   const [error, setError] = useState(null); // State to store error messages
 
   useEffect(() => {
-    fetch('https://habibs-blog-api.azurewebsites.net/post')
+    fetch('http://20.121.128.76/post')
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch posts'); // Throw an error if response is not ok

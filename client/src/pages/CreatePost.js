@@ -24,7 +24,7 @@ export default function CreatePost() {
     }
     console.log("data", data);
     try {
-      const response = await fetch("https://habibs-blog-api.azurewebsites.net/post", {
+      const response = await fetch("http://20.121.128.76/post", {
         method: "POST",
         body: data,
         credentials: "include",
