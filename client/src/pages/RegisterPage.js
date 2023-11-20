@@ -11,7 +11,7 @@ export default function RegisterPage() {
     setError(null); // Reset error on new submission
 
     try {
-      const response = await fetch('http://20.121.128.76/register', {
+      const response = await fetch('https://whoishabib.wiki/register', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
         headers: { 'Content-Type': 'application/json' },

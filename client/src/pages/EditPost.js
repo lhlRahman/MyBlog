@@ -12,7 +12,7 @@ export default function EditPost() {
   const [error, setError] = useState(null); // New state for error handling
 
   useEffect(() => {
-    fetch('http://20.121.128.76/' + id)
+    fetch('https://whoishabib.wiki/' + id)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch post');
@@ -44,7 +44,7 @@ export default function EditPost() {
     }
 
     try {
-      const response = await fetch('http://20.121.128.76/post', {
+      const response = await fetch('https://whoishabib.wiki/post', {
         method: 'PUT',
         body: data,
         credentials: 'include',

@@ -5,7 +5,7 @@ import {UserContext} from "../UserContext";
 export default function Header() {
   const {setUserInfo,userInfo} = useContext(UserContext);
   useEffect(() => {
-    fetch('http://20.121.128.76/profile', {
+    fetch('https://whoishabib.wiki/profile', {
       credentials: 'include',
     }).then(response => {
       response.json().then(userInfo => {
@@ -15,7 +15,7 @@ export default function Header() {
   }, [setUserInfo]);
 
   function logout() {
-    fetch('http://20.121.128.76/logout', {
+    fetch('https://whoishabib.wiki/logout', {
       credentials: 'include',
       method: 'POST',
     });
