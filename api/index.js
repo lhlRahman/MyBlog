@@ -12,7 +12,6 @@ const fs = require('fs').promises;
 require('dotenv').config();
 const path = require('path'); 
 
-
 const salt = bcrypt.genSaltSync(10);
 const secret = process.env.SECRET_KEY;
 
@@ -37,7 +36,6 @@ app.use(cors({
     'http://whoishabib.wiki'
   ]
 }));
-
 
 // Parse JSON request bodies
 app.use(express.json());
@@ -77,10 +75,10 @@ function verifyToken(token) {
   }
 }
 
-
 // Register endpoint
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
+  console.log('Register endpoint called');
   try {
     const userDoc = await User.create({
       username,
@@ -96,6 +94,7 @@ app.post('/register', async (req, res) => {
 // Login endpoint
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log('Login endpoint called');
   try {
     const userDoc = await User.findOne({ username });
     if (!userDoc) {
@@ -108,6 +107,7 @@ app.post('/login', async (req, res) => {
           console.error(err);
           return res.status(500).json({ message: 'Error generating token' });
         }
+        console.log('Token:', token);
         res.cookie('token', token).json({
           id: userDoc._id,
           username,
@@ -126,14 +126,17 @@ app.post('/login', async (req, res) => {
 app.get('/profile', (req, res) => {
   const { token } = req.cookies;
   const userInfo = verifyToken(token);
+  console.log('Profile endpoint called');
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
+  console.log('User info:', userInfo);
   res.json(userInfo);
 });
 
 // Logout endpoint
 app.post('/logout', (req, res) => {
+  console.log('Logout endpoint called');
   res.cookie('token', '').json('ok');
 });
 
@@ -141,9 +144,11 @@ app.post('/logout', (req, res) => {
 app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
   const { token } = req.cookies;
   const userInfo = verifyToken(token);
+  console.log('Create post endpoint called');
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
+  console.log('User info:', userInfo);
   const { originalname, path } = req.file;
   const parts = originalname.split('.');
   const ext = parts[parts.length - 1];
@@ -151,6 +156,7 @@ app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
   await fs.rename(path, newPath);
 
   const { title, summary, content } = req.body;
+  console.log('Tokens:', title, summary, content);
   const postDoc = await Post.create({
     title,
     summary,
@@ -165,9 +171,11 @@ app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
 app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
   const { token } = req.cookies;
   const userInfo = verifyToken(token);
+  console.log('Update post endpoint called');
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
+  console.log('User info:', userInfo);
   let newPath = null;
   if (req.file) {
     const { originalname, path } = req.file;
@@ -200,6 +208,7 @@ app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
 
 // Get all posts endpoint
 app.get('/post', async (req, res) => {
+  console.log('Get all posts endpoint called');
   res.json(
     await Post.find()
       .populate('author', ['username'])
@@ -212,9 +221,11 @@ app.get('/post', async (req, res) => {
 app.get('/post/:id', async (req, res) => {
   const { token } = req.cookies;
   const userInfo = verifyToken(token);
+  console.log('Get single post endpoint called');
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
+  console.log('User info:', userInfo);
   const { id } = req.params;
   const postDoc = await Post.findById(id).populate('author', ['username']);
   if (!postDoc) {
