@@ -1,75 +1,48 @@
-import "react-quill/dist/quill.snow.css";
-import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import 'react-quill/dist/quill.snow.css';
+import {useState} from "react";
+import {Navigate} from "react-router-dom";
 import Editor from "./Editor";
 
 export default function CreatePost() {
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [content, setContent] = useState("");
-  const [file, setFiles] = useState(null);
+  const [title,setTitle] = useState('');
+  const [summary,setSummary] = useState('');
+  const [content,setContent] = useState('');
+  const [files, setFiles] = useState('');
   const [redirect, setRedirect] = useState(false);
-  const [error, setError] = useState(null); // New state for error messages
-
   async function createNewPost(ev) {
-    ev.preventDefault();
-    setError(null); // Reset error on new submission
-
     const data = new FormData();
-    data.set("title", title);
-    data.set("summary", summary);
-    data.set("content", content);
-    if (file && file.length > 0) {
-      data.set("file", file[0]);
-    }
-    console.log("data", data);
-    try {
-      const response = await fetch("https://whoishabib.wiki/post", {
-        method: "POST",
-        body: data,
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorMsg = await response.text(); // Assumes error message is in text format
-        throw new Error(errorMsg || "Error creating post");
-      }
-
+    data.set('title', title);
+    data.set('summary', summary);
+    data.set('content', content);
+    data.set('file', files[0]);
+    ev.preventDefault();
+    const response = await fetch('https://whoishabib.wiki/post', {
+      method: 'POST',
+      body: data,
+      credentials: 'include',
+    });
+    if (response.ok) {
       setRedirect(true);
-    } catch (err) {
-      setError(err.message); // Set error message
-      console.error("Error creating post:", err);
     }
   }
 
   if (redirect) {
-    return <Navigate to={"/"} />;
+    return <Navigate to={'/'} />
   }
-
   return (
-    <form className="create-post" onSubmit={createNewPost}>
-      {error && <p className="error-message">{error}</p>} {/* Display error message */}
-      <input
-        type="title"
-        placeholder={"Title"}
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-      />
-      <input
-        type="summary"
-        placeholder={"Summary"}
-        value={summary}
-        onChange={(event) => setSummary(event.target.value)}
-      />
-      <input
-        type="file"
-        onChange={(event) => setFiles(event.target.files)}
-      />
-      <Editor onChange={setContent} value={content} />
-      <button type="submit">Create Post</button>
+    <form onSubmit={createNewPost}>
+      <input type="title"
+             placeholder={'Title'}
+             value={title}
+             onChange={ev => setTitle(ev.target.value)} />
+      <input type="summary"
+             placeholder={'Summary'}
+             value={summary}
+             onChange={ev => setSummary(ev.target.value)} />
+      <input type="file"
+             onChange={ev => setFiles(ev.target.files)} />
+      <Editor value={content} onChange={setContent} />
+      <button style={{marginTop:'5px'}}>Create post</button>
     </form>
   );
 }
-
-
-//test
