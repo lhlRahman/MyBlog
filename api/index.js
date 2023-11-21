@@ -27,16 +27,27 @@ const storage = multer.diskStorage({
 const uploadMiddleware = multer({ storage: storage });
 
 // Enable CORS for the specified origin
-app.use(cors({
+const allowedOrigins = [
+  'https://habibs-blog.vercel.app',
+  'http://habibs-blog.vercel.app',
+  'https://whoishabib.wiki',
+  'http://whoishabib.wiki',
+  'http://localhost:3000'  // For development purposes
+];
+
+const corsOptions = {
   credentials: true,
-  origin: [
-    'https://habibs-blog.vercel.app',
-    'http://habibs-blog.vercel.app',
-    'https://whoishabib.wiki',
-    'http://whoishabib.wiki',
-    'http://localhost:3000'
-  ]
-}));
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+app.use(cors(corsOptions));
+
 
 // Parse JSON request bodies
 app.use(express.json());
@@ -145,7 +156,7 @@ app.post('/logout', (req, res) => {
 app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
   const { token } = req.cookies;
   const userInfo = verifyToken(token);
-  console.log('Create post endpoint called ${req.file} ${req.cookies} ${req.body}');
+  console.log(req);
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
