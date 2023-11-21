@@ -143,10 +143,12 @@ app.post('/logout', (req, res) => {
 
 // Create post endpoint
 app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
-
-  console.log('Create post endpoint called');
-  console.log('Tokens:', token, userInfo, req.body);
- 
+  const { token } = req.cookies;
+  const userInfo = verifyToken(token);
+  console.log('Create post endpoint called ${req.file} ${req.cookies} ${req.body}');
+  if (!userInfo) {
+    return res.status(400).json({ message: 'Invalid token' });
+  }
   console.log('User info:', userInfo);
   const { originalname, path } = req.file;
   const parts = originalname.split('.');
