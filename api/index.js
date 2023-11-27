@@ -240,14 +240,9 @@ app.get('/post/:id', async (req, res) => {
   res.json(postDoc);
 });
 app.get('*', (req, res) => {
-	res,sendFile(path.join(__dirname, 'static/index.html'))
+	res.sendFile(path.join(__dirname, 'static/index.html'))
 })
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).send({ message: 'Internal Server Error' });
-});
-
 // Start the server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
