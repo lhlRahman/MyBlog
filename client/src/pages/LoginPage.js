@@ -14,7 +14,7 @@ export default function LoginPage() {
     setError(null); // Reset error on new submission
 
     try {
-      const response = await fetch('http://localhost:4000/login', {
+      const response = await fetch('/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
         headers: { 'Content-Type': 'application/json' },

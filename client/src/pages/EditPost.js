@@ -12,7 +12,7 @@ export default function EditPost() {
   const [error, setError] = useState(null); // New state for error handling
 
   useEffect(() => {
-    fetch('http://localhost:4000/' + id)
+    fetch('/' + id)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch post');
@@ -44,7 +44,7 @@ export default function EditPost() {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/post', {
+      const response = await fetch('/post', {
         method: 'PUT',
         body: data,
         credentials: 'include',
