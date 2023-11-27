@@ -6,7 +6,7 @@ export default function IndexPage() {
   const [error, setError] = useState(null); // State to store error messages
 
   useEffect(() => {
-    fetch('https://whoishabib.wiki/post')
+    fetch('http://localhost:4000/post')
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch posts'); // Throw an error if response is not ok

@@ -119,7 +119,6 @@ app.post('/login', async (req, res) => {
           console.error(err);
           return res.status(500).json({ message: 'Error generating token' });
         }
-        console.log('Token:', token);
         res.cookie('token', token).json({
           id: userDoc._id,
           username,
@@ -142,7 +141,6 @@ app.get('/profile', (req, res) => {
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
-  console.log('User info:', userInfo);
   res.json(userInfo);
 });
 
@@ -156,7 +154,6 @@ app.post('/logout', (req, res) => {
 app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
   const { token } = req.cookies;
   const userInfo = verifyToken(token);
-  console.log(req);
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
@@ -168,7 +165,6 @@ app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
   await fs.rename(path, newPath);
 
   const { title, summary, content } = req.body;
-  console.log('Tokens:', title, summary, content);
   const postDoc = await Post.create({
     title,
     summary,
@@ -187,7 +183,6 @@ app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
-  console.log('User info:', userInfo);
   let newPath = null;
   if (req.file) {
     const { originalname, path } = req.file;
@@ -237,7 +232,6 @@ app.get('/post/:id', async (req, res) => {
   if (!userInfo) {
     return res.status(400).json({ message: 'Invalid token' });
   }
-  console.log('User info:', userInfo);
   const { id } = req.params;
   const postDoc = await Post.findById(id).populate('author', ['username']);
   if (!postDoc) {
