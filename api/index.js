@@ -47,7 +47,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
+app.use(express.static('static'))
 
 // Parse JSON request bodies
 app.use(express.json());
@@ -239,7 +239,9 @@ app.get('/post/:id', async (req, res) => {
   }
   res.json(postDoc);
 });
-
+app.get('*', (req, res) => {
+	res,sendFile(path.join(__dirname, 'static/index.html'))
+})
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err);
