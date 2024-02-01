@@ -226,12 +226,8 @@ app.get('/post', async (req, res) => {
 
 // Get single post endpoint
 app.get('/post/:id', async (req, res) => {
-  const { token } = req.cookies;
-  const userInfo = verifyToken(token);
   console.log('Get single post endpoint called');
-  if (!userInfo) {
-    return res.status(400).json({ message: 'Invalid token' });
-  }
+ 
   const { id } = req.params;
   const postDoc = await Post.findById(id).populate('author', ['username']);
   if (!postDoc) {
